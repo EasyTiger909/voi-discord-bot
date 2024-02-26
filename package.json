@@ -1,0 +1,31 @@
+{
+  "name": "voi-discord-bot",
+  "version": "1.0",
+  "description": "This Discord Bot reads data from ARC-72 NFTs to be used for assigning roles and flexing media",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist",
+    "deploy-commands": "tsc && npx run-func dist/deploy-commands.js deployAll",
+    "prettier": "npx prettier . -w"
+  },
+  "author": "EasyTiger",
+  "dependencies": {
+    "algosdk": "^2.7.0",
+    "cron": "^3.1.6",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5",
+    "ulujs": "^0.1.8"
+  },
+  "devDependencies": {
+    "@types/cron": "^2.0.1",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  }
+}
