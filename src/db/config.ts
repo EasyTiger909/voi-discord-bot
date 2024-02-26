@@ -2,18 +2,15 @@
 // prepending a 6th field for seconds
 export const scheduledScripts: {
   cronTime: string;
-  timeZone: string;
   scriptName: string;
 }[] = [
   {
-    //example: update all member roles everyday at 9:25am and 9:25pm EST
+    //example: update all member roles everyday at 9:25am and 9:25pm
     cronTime: "0 25 9,21 * * *",
-    timeZone: "America/New_York",
     scriptName: "update-member-roles",
   },
   {
     cronTime: "0 0 0 * * *",
-    timeZone: "America/New_York",
     scriptName: "some-test-script",
   },
 ];
@@ -21,8 +18,8 @@ export const scheduledScripts: {
 type RoleRequirement =
   | { arc72AppId: number; minUnits: bigint }
   | { arc200AppId: number; minUnits: bigint }
-  | { assetIds: number[]; minUnits: bigint }
-  | { creatorAddr: string; minUnits: bigint };
+  | { assetIds: number | number[]; minUnits: bigint }
+  | { creatorAddrs: string | string[]; minUnits: bigint };
 
 // Define the roles that the bot will manage here.
 // Roles can have lists of various requirements
@@ -32,7 +29,7 @@ type RoleRequirement =
 //  - Amount of tokens held by an arc72AppId
 //  - Amount of tokens held by an arc200AppId
 //  - Amount of standard assets held of a list of assetIds (ALGO/VOI treated as assetId 0)
-//  - Amount of standard assets held from a creator address
+//  - Amount of standard assets held of a list of creator address
 //
 export const managedRoles: {
   roleId: string;
@@ -51,7 +48,7 @@ export const managedRoles: {
     // anyOf example: this role requires holding at least 10 VOI OR 10 Testnet VIA
     roleId: "1068974591621484584",
     anyOf: [
-      { assetIds: [0], minUnits: 10000000n },
+      { assetIds: 0, minUnits: 10000000n },
       { arc200AppId: 6779767, minUnits: 10000000n },
     ],
   },
@@ -62,7 +59,7 @@ export const managedRoles: {
     roleId: "1068974591621484500",
     allOf: [
       {
-        creatorAddr:
+        creatorAddrs:
           "VINY6VJDHYYSKTRE54XHOUMS5ISV6A5XHOV3HMMLBNJNHNLIMYFRMLLXOI",
         minUnits: 1n,
       },

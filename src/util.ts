@@ -110,39 +110,61 @@ type Arc72IndexerToken = {
   mintRound?: number;
 };
 
-export const getArc72FromIndexer = async (addr: string, appId?: number) => {
-  const endpoint = "https://arc72-idx.voirewards.com/nft-indexer/v1/tokens?";
+export const getAddrArc72FromIndexer = async (
+  addrs: string | string[],
+  contractId?: number
+) => {
+  const addresses = typeof addrs === "string" ? [addrs] : addrs;
+
   const tokens: Arc72IndexerToken[] = [];
-  const res = await fetch(
-    `${endpoint}owner=${addr}${appId ? `&contractId=${appId}` : ""}`
-  );
-  if (res.status === 200) {
-    const resJson = await res.json();
-    tokens.push(
-      ...resJson.tokens.map((token: Record<string, unknown>) => {
-        return {
-          contractId: token.contractId,
-          tokenId: token.tokenId,
-          owner: token.owner,
-          metadataURI: token.metadataURI,
-          metadata: JSON.parse(String(token.metadata)),
-          approved: token.approved,
-          mintRound: token["mint-round"],
-        };
-      })
+  for await (const address of addresses) {
+    const endpoint = "https://arc72-idx.voirewards.com/nft-indexer/v1/tokens?";
+    const res = await fetch(
+      `${endpoint}owner=${address}${contractId ? `&contractId=${contractId}` : ""}`
     );
+
+    if (res.status === 200) {
+      const resJson = await res.json();
+      tokens.push(
+        ...resJson.tokens.map((token: Record<string, unknown>) => {
+          return {
+            contractId: token.contractId,
+            tokenId: token.tokenId,
+            owner: token.owner,
+            metadataURI: token.metadataURI,
+            metadata: JSON.parse(String(token.metadata)),
+            approved: token.approved,
+            mintRound: token["mint-round"],
+          };
+        })
+      );
+    }
   }
   return tokens;
 };
 
-export const getArc72FromIndexerMulti = async (
-  appId: number,
-  addrs: string[]
+export const getArc72FromIndexer = async (
+  contractId: number,
+  tokenId: number
 ) => {
-  const tokens: Arc72IndexerToken[] = [];
-  for await (const address of addrs) {
-    const someTokens = await getArc72FromIndexer(address, appId);
-    tokens.push(...someTokens);
+  const endpoint = "https://arc72-idx.voirewards.com/nft-indexer/v1/tokens?";
+  const res = await fetch(
+    `${endpoint}contractId=${contractId}&tokenId=${tokenId}`
+  );
+  if (res.status === 200) {
+    const resJson = await res.json();
+    if (resJson.tokens.length > 0) {
+      const token = resJson.tokens[0];
+      const parsedToken: Arc72IndexerToken = {
+        contractId: token.contractId,
+        tokenId: token.tokenId,
+        owner: token.owner,
+        metadataURI: token.metadataURI,
+        metadata: JSON.parse(String(token.metadata)),
+        approved: token.approved,
+        mintRound: token["mint-round"],
+      };
+      return parsedToken;
+    }
   }
-  return tokens;
 };

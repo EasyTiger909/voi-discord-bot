@@ -10,29 +10,29 @@ No database is included with this version. Discord user addresses are found by l
 
 - **AlgoVerify**: https://www.algoverify.me/api-docs
 
+Refer to example.env for setting up .env/environment variables for securing the Discord `BOT_TOKEN`
+
+Other configurations are included in db/config.ts
+
 # Features
 
-Refer to example.env to use .env or environment variables for securing the Discord BOT_TOKEN
+### Scheduled Tasks
 
-Other configurations are included in config.ts
+Included script updates all users roles on a schedule
 
-### Roles
+### Slash Commands
 
-Slash command `/roles` will update the users Discord roles on-demand
+`/roles` slash command will update the users Discord roles on-demand
 
-An included script updates all users roles on a schedule
+`/flex` slash command will use NFT Navigator Indexer API to pull ARC-72 tokens held and display media to channel
 
-### Flex (soon)
-
-Will use NFT Navigator Indexer API to pull image URI and metadata
-
-### Listings and Sales Announcements (later)
+### Listings and Sales Announcements (soon)
 
 Will require reading listing and sales events from ARC-72 contracts
 
 ### ARC200 tips (later)
 
-Will require a database to save a recipients preferred withdraw address.
+Need to allow for choosing desitnation when recipient has multiple addresses registered
 
 ## Typescript
 

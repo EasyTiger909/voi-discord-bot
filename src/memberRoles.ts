@@ -1,5 +1,5 @@
 import { GuildMember, Role } from "discord.js";
-import { managedRoles } from "./config.js";
+import { managedRoles } from "./db/config.js";
 import {
   getAddressBalances,
   getArc200Contract,
@@ -24,11 +24,15 @@ export const assignRoles = async (
       if ("arc72AppId" in req) arc72AppIds.add(req.arc72AppId);
       if ("arc200AppId" in req) arc200AppIds.add(req.arc200AppId);
       if ("assetIds" in req) balancesNeedToBeFetched = true;
-      if (!preFetchedCreatorAssets && "creatorAddr" in req) {
-        if (!creatorAssets[req.creatorAddr])
-          creatorAssets[req.creatorAddr] = await getCreatorAssets(
-            req.creatorAddr
-          );
+      if (!preFetchedCreatorAssets && "creatorAddrs" in req) {
+        const addrs =
+          typeof req.creatorAddrs === "string"
+            ? [req.creatorAddrs]
+            : req.creatorAddrs;
+        for await (const creatorAddr of addrs) {
+          if (!creatorAssets[creatorAddr])
+            creatorAssets[creatorAddr] = await getCreatorAssets(creatorAddr);
+        }
       }
     }
   }
@@ -92,12 +96,22 @@ export const assignRoles = async (
           return arc72Balances[req.arc72AppId] >= req.minUnits;
         if ("arc200AppId" in req)
           return arc200Balances[req.arc200AppId] >= req.minUnits;
-        if ("assetIds" in req)
-          return req.assetIds.some((id) => assetBalances[id] >= req.minUnits);
-        if ("creatorAddr" in req)
-          return creatorAssets[req.creatorAddr]?.some(
-            (id) => assetBalances[id] >= req.minUnits
-          );
+        if ("assetIds" in req) {
+          const assetIds =
+            typeof req.assetIds === "number" ? [req.assetIds] : req.assetIds;
+          return assetIds.some((id) => assetBalances[id] >= req.minUnits);
+        }
+        if ("creatorAddrs" in req) {
+          const creatorAddrs =
+            typeof req.creatorAddrs === "string"
+              ? [req.creatorAddrs]
+              : req.creatorAddrs;
+          creatorAddrs.forEach((creatorAddr) => {
+            return creatorAssets[creatorAddr]?.every(
+              (id) => assetBalances[id] >= req.minUnits
+            );
+          });
+        }
         return false;
       }) ?? true;
 
@@ -107,12 +121,22 @@ export const assignRoles = async (
           return arc72Balances[req.arc72AppId] >= req.minUnits;
         if ("arc200AppId" in req)
           return arc200Balances[req.arc200AppId] >= req.minUnits;
-        if ("assetIds" in req)
-          return req.assetIds.some((id) => assetBalances[id] >= req.minUnits);
-        if ("creatorAddr" in req)
-          return creatorAssets[req.creatorAddr]?.some(
-            (id) => assetBalances[id] >= req.minUnits
-          );
+        if ("assetIds" in req) {
+          const assetIds =
+            typeof req.assetIds === "number" ? [req.assetIds] : req.assetIds;
+          return assetIds.some((id) => assetBalances[id] >= req.minUnits);
+        }
+        if ("creatorAddrs" in req) {
+          const creatorAddrs =
+            typeof req.creatorAddrs === "string"
+              ? [req.creatorAddrs]
+              : req.creatorAddrs;
+          creatorAddrs.forEach((creatorAddr) => {
+            return creatorAssets[creatorAddr]?.every(
+              (id) => assetBalances[id] >= req.minUnits
+            );
+          });
+        }
       }) ?? true;
 
     if (someReq && allReq) result.qualifies = true;

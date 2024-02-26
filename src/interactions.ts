@@ -1,4 +1,10 @@
-import { REST, Routes } from "discord.js";
+import {
+  Collection,
+  CommandHandler,
+  ButtonHandler,
+  REST,
+  Routes,
+} from "discord.js";
 import * as dotenv from "dotenv";
 import * as fs from "node:fs";
 import * as path from "path";
@@ -10,11 +16,34 @@ const token = process.env.BOT_TOKEN ?? "";
 
 const fileName = fileURLToPath(import.meta.url);
 const dirName = path.dirname(fileName);
+
 const commandFiles = fs
   .readdirSync(path.join(dirName, "commands"))
   .filter((file) => file.endsWith(".js"));
 
-export const deployApplication = async (clientId: string) => {
+const buttonFiles = fs
+  .readdirSync(path.join(dirName, "buttons"))
+  .filter((file) => file.endsWith(".js"));
+
+export const getCommands = async () => {
+  const commands = new Collection<string, CommandHandler>();
+  for (const file of commandFiles) {
+    const command = await import(`./commands/${file}`);
+    commands.set(command.data.name, command);
+  }
+  return commands;
+};
+
+export const getButtons = async () => {
+  const buttons = new Collection<string, ButtonHandler>();
+  for (const file of buttonFiles) {
+    const button = await import(`./buttons/${file}`);
+    buttons.set(button.id, button);
+  }
+  return buttons;
+};
+
+export const deployApplicationCommands = async (clientId: string) => {
   const commands = [];
 
   for (const file of commandFiles) {
@@ -23,8 +52,6 @@ export const deployApplication = async (clientId: string) => {
       commands.push(command.data.toJSON());
     }
   }
-
-  if (commands.length === 0) return 0;
 
   const rest = new REST({ version: "10" }).setToken(token);
   try {
@@ -36,7 +63,10 @@ export const deployApplication = async (clientId: string) => {
   }
 };
 
-export const deployGuild = async (clientId: string, guildId: string) => {
+export const deployGuildCommands = async (
+  clientId: string,
+  guildId: string
+) => {
   const commands = [];
 
   for (const file of commandFiles) {
@@ -45,8 +75,6 @@ export const deployGuild = async (clientId: string, guildId: string) => {
       commands.push(command.data.toJSON());
     }
   }
-
-  if (commands.length === 0) return 0;
 
   const rest = new REST({ version: "10" }).setToken(token);
 

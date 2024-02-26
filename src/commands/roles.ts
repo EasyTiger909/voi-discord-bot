@@ -1,4 +1,10 @@
-import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  SlashCommandBuilder,
+} from "discord.js";
 import { getUserProfile } from "../db/userProfiles.js";
 import { assignRoles } from "../memberRoles.js";
 import { addrShortened } from "../util.js";
@@ -29,5 +35,15 @@ export const execute = async (interaction: CommandInteraction) => {
       return `**${r.role.name}**: ${r.qualifies ? "✅️" : "⌛️"}${r.added ? "*Added!*" : ""}${r.removed ? "*Removed*" : ""}`;
     }),
   ];
-  await interaction.editReply(summary.join("\n"));
+
+  const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId("addresses")
+      .setLabel("Addresses")
+      .setStyle(ButtonStyle.Primary)
+  );
+  await interaction.editReply({
+    content: summary.join("\n"),
+    components: [buttons],
+  });
 };
