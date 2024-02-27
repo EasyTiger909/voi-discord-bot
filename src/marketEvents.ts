@@ -97,6 +97,9 @@ const checkMarketEvents = async (
       contractList.includes(contractId) || a.contractIds === 0;
     });
 
+    // Skip this event if no announcement is configured
+    if (settings.length === 0) continue;
+
     const nft = await getArc72FromIndexer(contractId, tokenId);
     if (!nft?.metadata) continue;
 
