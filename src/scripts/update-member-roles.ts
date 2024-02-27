@@ -14,10 +14,8 @@ export const run = async (client: Client) => {
   const members = await guild.members.fetch();
 
   for await (const [, member] of members) {
-    const userProfile = await getUserProfile(member.id);
-    if (!userProfile) continue;
+    const { addresses } = await getUserProfile(member.id);
 
-    const addresses = Array.from(userProfile.addresses);
     const roleList = await assignRoles(member, addresses);
 
     const rolesAdded = roleList.filter((r) => r.added).map((r) => r.role);

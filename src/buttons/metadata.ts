@@ -1,11 +1,20 @@
 import { ButtonInteraction, EmbedBuilder } from "discord.js";
 import { getArc72FromIndexer } from "../util.js";
 
-export const id = "metadata";
+export const name = "metadata";
 
 export const execute = async (interaction: ButtonInteraction) => {
+  const tokenType = interaction.customId.split("-")[1] as "asa" | "arc72";
   const contractId = Number(interaction.customId.split("-")[2]);
   const tokenId = Number(interaction.customId.split("-")[3]);
+
+  if (tokenType === "asa") {
+    await interaction.reply({
+      content: "Metadata not yet available for this token type",
+      ephemeral: true,
+    });
+    return;
+  }
 
   const t = await getArc72FromIndexer(contractId, tokenId);
 

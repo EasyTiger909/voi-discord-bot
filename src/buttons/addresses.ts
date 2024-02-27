@@ -1,6 +1,6 @@
 import { ButtonInteraction } from "discord.js";
 
-export const id = "addresses";
+export const name = "addresses";
 
 export const execute = async (interaction: ButtonInteraction) => {
   const content = [

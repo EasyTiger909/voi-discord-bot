@@ -21,6 +21,12 @@ const getIndexerClient = () => {
 
 export const isValidAddress = algosdk.isValidAddress;
 
+export const getCurrentRound = async () => {
+  const algodClient = getAlgodClient();
+  const status = await algodClient.status().do();
+  return Number(status["last-round"]);
+};
+
 export const getAddressBalances = async (address: string) => {
   const addressBalances: Record<number, bigint> = {};
   const algodClient = getAlgodClient();

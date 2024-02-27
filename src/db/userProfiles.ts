@@ -27,7 +27,7 @@ export const getUserProfile = async (userId: string) => {
       ...(userProfile?.addresses || []),
       ...(addrsFromNfd ?? []),
       ...(addrsFromAlgoVerify ?? []),
-    ])
+    ]),
   );
 
   return {

@@ -10,7 +10,7 @@ import {
 export const assignRoles = async (
   member: GuildMember,
   addresses: string[],
-  preFetchedCreatorAssets?: Record<string, number[]>
+  preFetchedCreatorAssets?: Record<string, number[]>,
 ) => {
   // Get all required assets and balances for the user
   let balancesNeedToBeFetched = false;
@@ -24,11 +24,10 @@ export const assignRoles = async (
       if ("arc72AppId" in req) arc72AppIds.add(req.arc72AppId);
       if ("arc200AppId" in req) arc200AppIds.add(req.arc200AppId);
       if ("assetIds" in req) balancesNeedToBeFetched = true;
-      if (!preFetchedCreatorAssets && "creatorAddrs" in req) {
-        const addrs =
-          typeof req.creatorAddrs === "string"
-            ? [req.creatorAddrs]
-            : req.creatorAddrs;
+      if (!preFetchedCreatorAssets && "creatorAddr" in req) {
+        const addrs = Array.isArray(req.creatorAddr)
+          ? req.creatorAddr
+          : [req.creatorAddr];
         for await (const creatorAddr of addrs) {
           if (!creatorAssets[creatorAddr])
             creatorAssets[creatorAddr] = await getCreatorAssets(creatorAddr);
@@ -96,19 +95,19 @@ export const assignRoles = async (
           return arc72Balances[req.arc72AppId] >= req.minUnits;
         if ("arc200AppId" in req)
           return arc200Balances[req.arc200AppId] >= req.minUnits;
-        if ("assetIds" in req) {
-          const assetIds =
-            typeof req.assetIds === "number" ? [req.assetIds] : req.assetIds;
+        if ("assetId" in req) {
+          const assetIds = Array.isArray(req.assetId)
+            ? req.assetId
+            : [req.assetId];
           return assetIds.some((id) => assetBalances[id] >= req.minUnits);
         }
-        if ("creatorAddrs" in req) {
-          const creatorAddrs =
-            typeof req.creatorAddrs === "string"
-              ? [req.creatorAddrs]
-              : req.creatorAddrs;
+        if ("creatorAddr" in req) {
+          const creatorAddrs = Array.isArray(req.creatorAddr)
+            ? req.creatorAddr
+            : [req.creatorAddr];
           creatorAddrs.forEach((creatorAddr) => {
             return creatorAssets[creatorAddr]?.every(
-              (id) => assetBalances[id] >= req.minUnits
+              (id) => assetBalances[id] >= req.minUnits,
             );
           });
         }
@@ -121,19 +120,19 @@ export const assignRoles = async (
           return arc72Balances[req.arc72AppId] >= req.minUnits;
         if ("arc200AppId" in req)
           return arc200Balances[req.arc200AppId] >= req.minUnits;
-        if ("assetIds" in req) {
-          const assetIds =
-            typeof req.assetIds === "number" ? [req.assetIds] : req.assetIds;
+        if ("assetId" in req) {
+          const assetIds = Array.isArray(req.assetId)
+            ? req.assetId
+            : [req.assetId];
           return assetIds.some((id) => assetBalances[id] >= req.minUnits);
         }
-        if ("creatorAddrs" in req) {
-          const creatorAddrs =
-            typeof req.creatorAddrs === "string"
-              ? [req.creatorAddrs]
-              : req.creatorAddrs;
+        if ("creatorAddr" in req) {
+          const creatorAddrs = Array.isArray(req.creatorAddr)
+            ? req.creatorAddr
+            : [req.creatorAddr];
           creatorAddrs.forEach((creatorAddr) => {
             return creatorAssets[creatorAddr]?.every(
-              (id) => assetBalances[id] >= req.minUnits
+              (id) => assetBalances[id] >= req.minUnits,
             );
           });
         }
@@ -155,7 +154,7 @@ export const assignRoles = async (
       }
     } catch (error) {
       console.log(
-        `Unable to add/remove role ${role.name} for ${member.displayName} (Check Bot Permissions)`
+        `Unable to add/remove role ${role.name} for ${member.displayName} (Check Bot Permissions)`,
       );
     }
 

@@ -14,7 +14,7 @@ export const data = new SlashCommandBuilder()
   .setName("flex")
   .setDescription("Flex NFT media that you hold")
   .addIntegerOption((option) =>
-    option.setName("id").setDescription("Enter App ID of token")
+    option.setName("id").setDescription("Enter App ID of token"),
   );
 
 export const execute = async (interaction: CommandInteraction) => {
@@ -26,7 +26,7 @@ export const execute = async (interaction: CommandInteraction) => {
     new ButtonBuilder()
       .setCustomId("addresses")
       .setLabel("Addresses")
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Primary),
   );
 
   if (addresses.length === 0) {
@@ -77,13 +77,13 @@ export const execute = async (interaction: CommandInteraction) => {
             label: m.metadata?.name ?? `${m.tokenId}`,
             description: `App ID: ${m.contractId} Token ID: ${m.tokenId}`,
             value: `${m.contractId}-${m.tokenId}`,
-          }))
-        )
+          })),
+        ),
     );
 
   const msgSelect = await interaction.followUp({
     content: review,
-    components: [selectMenu],
+    components: [selectMenu, buttons],
     ephemeral: true,
   });
 
@@ -95,7 +95,7 @@ export const execute = async (interaction: CommandInteraction) => {
     await menuInteraction.update({ components: [] });
 
     const selectedNft = arc72matches.find(
-      (t) => `${t.contractId}-${t.tokenId}` === menuInteraction.values[0]
+      (t) => `${t.contractId}-${t.tokenId}` === menuInteraction.values[0],
     );
 
     const { contractId, tokenId, metadata } = selectedNft!;
@@ -140,20 +140,19 @@ export const execute = async (interaction: CommandInteraction) => {
 
       const postButtons = new ActionRowBuilder<ButtonBuilder>().addComponents([
         new ButtonBuilder()
-          .setCustomId("metadata")
           .setLabel("View Metadata")
           .setStyle(ButtonStyle.Primary)
           .setCustomId(`metadata-arc72-${contractId}-${tokenId}`),
         new ButtonBuilder()
           .setLabel("NFT Navigator")
           .setURL(
-            `https://nftnavigator.xyz/collection/${contractId}/token/${tokenId}`
+            `https://nftnavigator.xyz/collection/${contractId}/token/${tokenId}`,
           )
           .setStyle(ButtonStyle.Link),
         new ButtonBuilder()
-          .setLabel("Voi Observer")
+          .setLabel("Nautilus")
           .setURL(
-            `https://voi.observer/explorer/application/${contractId}/transactions`
+            `https://nautilus.sh/#/collection/${contractId}/token/${tokenId}`,
           )
           .setStyle(ButtonStyle.Link),
       ]);

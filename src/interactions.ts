@@ -38,7 +38,7 @@ export const getButtons = async () => {
   const buttons = new Collection<string, ButtonHandler>();
   for (const file of buttonFiles) {
     const button = await import(`./buttons/${file}`);
-    buttons.set(button.id, button);
+    buttons.set(button.name, button);
   }
   return buttons;
 };
@@ -65,7 +65,7 @@ export const deployApplicationCommands = async (clientId: string) => {
 
 export const deployGuildCommands = async (
   clientId: string,
-  guildId: string
+  guildId: string,
 ) => {
   const commands = [];
 

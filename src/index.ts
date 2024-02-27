@@ -6,6 +6,7 @@ import {
   getButtons,
   getCommands,
 } from "./interactions.js";
+import { runMarketEvents } from "./marketEvents.js";
 import { scheduleScripts } from "./scripts.js";
 
 dotenv.config();
@@ -21,6 +22,7 @@ client.buttons = await getButtons();
 
 client.once(Events.ClientReady, async () => {
   scheduleScripts(client);
+  runMarketEvents(client);
 
   if (process.env.DEPLOY_COMMANDS_ON_STARTUP === "Y") {
     const clientId = client.user?.id;
@@ -46,7 +48,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       if (command) await command.execute(interaction);
     } else if (interaction.isButton()) {
       const button = client.buttons.get(
-        interaction.customId.split("-")[0] ?? ""
+        interaction.customId.split("-")[0] ?? "",
       );
       if (button) await button.execute(interaction);
     }

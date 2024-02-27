@@ -40,7 +40,7 @@ export const execute = async (interaction: CommandInteraction) => {
     new ButtonBuilder()
       .setCustomId("addresses")
       .setLabel("Addresses")
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Primary),
   );
   await interaction.editReply({
     content: summary.join("\n"),

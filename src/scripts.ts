@@ -20,7 +20,6 @@ export const scheduleScripts = (client: Client) => {
       },
       null,
       false,
-      "America/New_York"
     );
     task.start();
     console.log(`Scheduled script '${t.scriptName}' for ${t.cronTime}`);
