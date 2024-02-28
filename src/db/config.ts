@@ -72,26 +72,26 @@ export const managedRoles: {
 ];
 
 export const marketEventSettings: {
-  contractIds: number | number[];
+  contractId: number | number[];
   listChannelId?: string;
   salesChannelId?: string;
 }[] = [
   {
     // Example: Announce events from a single collection
-    contractIds: 29081122,
+    contractId: 29081122,
     listChannelId: "1193965879558414386",
     salesChannelId: "1193965879558414386",
   },
   {
     // Example: Announce events from a list of collections
-    contractIds: [26178469, 29085927],
+    contractId: [26178469, 29085927],
     listChannelId: "1201927960932921425",
     salesChannelId: "1201927960932921425",
   },
   {
     // Example: Announce events from ALL collections
-    contractIds: 0,
-    listChannelId: "1205279834138480691",
-    salesChannelId: "1205279834138480691",
+    contractId: 0,
+    listChannelId: "1212475011982692412",
+    salesChannelId: "1212474992462401566",
   },
 ];

@@ -1,7 +1,5 @@
 import { ButtonInteraction } from "discord.js";
 
-export const name = "addresses";
-
 export const execute = async (interaction: ButtonInteraction) => {
   const content = [
     "This Discord Bot supports 2 options for adding an address to your Discord account:",

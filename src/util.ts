@@ -1,5 +1,3 @@
-import { getCurrentRound } from "./network.js";
-
 export function shuffle<T>(array: T[]): T[] {
   let randomIndex;
   let currentIndex = array.length;
@@ -78,6 +76,16 @@ export const getNfdsByDiscordId = async (userId: string) => {
           properties: nfd.properties,
         };
       });
+    }
+  }
+};
+
+export const getNfdByAddr = async (addr: string) => {
+  const res = await fetch(`https://api.nf.domains/nfd/lookup?address=${addr}`);
+  if (res.status === 200) {
+    const resJson = await res.json();
+    if (resJson[addr]) {
+      return resJson[addr].name as string;
     }
   }
 };
@@ -176,37 +184,99 @@ export const getArc72FromIndexer = async (
   }
 };
 
-// DRAFT: NOT IMPLEMENTED YET
-export const getArc72Events = async (minRound: number) => {
-  const endpoint = "https://arc72-idx.voirewards.com/nft-indexer/v1/tokens?";
-  const res = await fetch(`${endpoint}minRound=${minRound}`);
-  const events: {
-    contractId: number;
-    tokenId: number;
-    eventType: "list" | "sale";
-    price: { token: string; units: bigint };
-  }[] = [];
+type Arc72IndexerListing = {
+  eventType: "listing";
+  transactionId: string;
+  seller: string;
+  price: number;
+  currency: 0 | 6779767;
+  round: number;
+  timestamp: number;
+  contractId: number;
+  tokenId: number;
+};
+
+export const getArc72Listings = async (
+  currentRound: number,
+  maxRound?: number,
+) => {
+  const endpoint =
+    "https://arc72-idx.voirewards.com/nft-indexer/v1/mp/listings?";
+  const res = await fetch(
+    `${endpoint}min-round=${currentRound + 1}${maxRound ? `&max-round=${maxRound}` : ""}`,
+  );
+  const listings: Arc72IndexerListing[] = [];
 
   if (res.status === 200) {
     const resJson = await res.json();
-    if (resJson.events) {
-      events.push(
-        ...resJson.events.map((event: Record<string, unknown>) => {
+    if (resJson.listings) {
+      listings.push(
+        ...resJson.listings.map((listing: Record<string, unknown>) => {
           return {
-            contractId: event.contractId,
-            tokenId: event.tokenId,
-            eventType: event.eventType,
-            price: event.price,
+            eventType: "listing",
+            transactionId: listing.transactionId,
+            seller: listing.seller,
+            price: listing.price,
+            currency: listing.currency,
+            round: listing.createRound,
+            timestamp: listing.createTimestamp,
+            contractId: listing.collectionId,
+            tokenId: listing.tokenId,
           };
         }),
       );
     }
-    const lastRound = resJson.currentRound
-      ? Number(resJson.currentRound)
-      : // Fallback until indexer implements this endpoint
-        await getCurrentRound();
 
-    return { events, lastRound };
+    return { listings, currentRound: Number(resJson["current-round"]) };
   }
-  return { events, lastRound: await getCurrentRound() };
+  return { listings, currentRound };
+};
+
+type Arc72IndexerSale = {
+  eventType: "sale";
+  transactionId: string;
+  seller: string;
+  buyer: string;
+  currency: 0 | 6779767;
+  price: number;
+  round: number;
+  timestamp: number;
+  contractId: number;
+  tokenId: number;
+};
+
+export const getArc72Sales = async (
+  currentRound: number,
+  maxRound?: number,
+) => {
+  const endpoint = "https://arc72-idx.voirewards.com/nft-indexer/v1/mp/sales?";
+  const res = await fetch(
+    `${endpoint}min-round=${currentRound + 1}${maxRound ? `&max-round=${maxRound}` : ""}`,
+  );
+  const sales: Arc72IndexerSale[] = [];
+
+  if (res.status === 200) {
+    const resJson = await res.json();
+    if (resJson.sales) {
+      sales.push(
+        ...resJson.sales.map((sale: Record<string, unknown>) => {
+          return {
+            eventType: "sale",
+            transactionId: sale.transactionId,
+            seller: sale.seller,
+            buyer: sale.buyer,
+            price: sale.price,
+            currency: sale.currency,
+            round: sale.round,
+            timestamp: sale.timestamp,
+            contractId: sale.collectionId,
+            tokenId: sale.tokenId,
+          };
+        }),
+      );
+    }
+
+    return { sales, currentRound: Number(resJson["current-round"]) };
+  }
+  return { sales, currentRound };
 };

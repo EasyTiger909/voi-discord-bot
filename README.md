@@ -26,13 +26,13 @@ Included script updates all users roles on a schedule
 
 `/flex` slash command will use NFT Navigator Indexer API to pull ARC-72 tokens held and display media to channel
 
-### Listings and Sales Announcements (soon)
+### Listings and Sales Announcements
 
-Will require reading listing and sales events from ARC-72 contracts
+Checks NFT Navigator (ARC-72 Indexer) API every 60 seconds and posts listings and sales to configured channels
 
 ### ARC200 tips (later)
 
-Need to allow for choosing desitnation when recipient has multiple addresses registered
+Need to allow for choosing destination when recipient has multiple addresses
 
 ## Typescript
 

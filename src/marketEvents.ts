@@ -7,10 +7,22 @@ import {
   Collection,
   EmbedBuilder,
   TextChannel,
+  time,
 } from "discord.js";
 import { marketEventSettings } from "./db/config.js";
 import { getCurrentRound } from "./network.js";
-import { getArc72Events, getArc72FromIndexer } from "./util.js";
+import {
+  addrShortened,
+  getArc72FromIndexer,
+  getArc72Listings,
+  getArc72Sales,
+  getNfdByAddr,
+} from "./util.js";
+
+const currencyLookup = {
+  0: { symbol: "VOI", decimals: 6 },
+  6779767: { symbol: "VIA", decimals: 6 },
+};
 
 export const runMarketEvents = async (client: Client) => {
   // Create a collection of channel references
@@ -43,22 +55,22 @@ export const runMarketEvents = async (client: Client) => {
 
   // Summarize event settings to console
   marketEventSettings.forEach(
-    ({ contractIds, listChannelId, salesChannelId }) => {
+    ({ contractId: contractId, listChannelId, salesChannelId }) => {
       const setting = [
-        Array.isArray(contractIds)
-          ? contractIds.map((c) => c.toString()).join(", ")
-          : contractIds === 0
+        Array.isArray(contractId)
+          ? contractId.map((c) => c.toString()).join(", ")
+          : contractId === 0
             ? "ALL"
-            : contractIds,
+            : contractId,
       ];
 
       const listChannel = channels.get(listChannelId ?? "");
       if (listChannel)
-        setting.push(`Listings will be announced in ${listChannel.name}.`);
+        setting.push(`Listings will be announced in #${listChannel.name}.`);
 
       const salesChannel = channels.get(salesChannelId ?? "");
       if (salesChannel)
-        setting.push(`Sales will be announced in ${salesChannel.name}.`);
+        setting.push(`Sales will be announced in #${salesChannel.name}.`);
 
       if (setting.length > 1) console.log(setting.join(" "));
     },
@@ -81,20 +93,24 @@ export const runMarketEvents = async (client: Client) => {
 };
 
 const checkMarketEvents = async (
-  minRound: number,
+  currentRound: number,
   channels: Collection<string, TextChannel>,
 ) => {
-  console.log("Checking market events…", minRound);
+  const listingResponse = await getArc72Listings(currentRound);
+  const salesResponse = await getArc72Sales(
+    currentRound,
+    listingResponse.currentRound,
+  );
 
-  const marketEvents = await getArc72Events(minRound);
-  if (!marketEvents) return minRound;
+  const events = [...listingResponse.listings, ...salesResponse.sales];
 
-  for await (const { contractId, tokenId, eventType } of marketEvents.events) {
+  for await (const event of events) {
+    const { contractId, tokenId, eventType } = event;
     const settings = marketEventSettings.filter((a) => {
-      const contractList = Array.isArray(a.contractIds)
-        ? a.contractIds
-        : [a.contractIds];
-      contractList.includes(contractId) || a.contractIds === 0;
+      const contractList = Array.isArray(a.contractId)
+        ? a.contractId
+        : [a.contractId];
+      return contractList.includes(contractId) || a.contractId === 0;
     });
 
     // Skip this event if no announcement is configured
@@ -107,16 +123,42 @@ const checkMarketEvents = async (
     if (!metadata) continue;
 
     const postEmbed = new EmbedBuilder()
-      .setDescription(metadata.name)
       .setImage(metadata.image)
       .setFooter({ text: "Open Source bot by Algo Leagues team" });
 
-    if (eventType === "list") postEmbed.setTitle("New Listing!");
-    if (eventType === "sale") postEmbed.setTitle("New Sale!");
+    const currency = currencyLookup[event.currency];
+    const price = `${event.price / 10 ** currency.decimals} ${currency.symbol}`;
+
+    const seller =
+      (await getNfdByAddr(event.seller)) ?? addrShortened(event.seller, 6);
+
+    if (eventType === "listing") {
+      postEmbed.setTitle(`${metadata.name} (New Listing)`);
+      postEmbed.setDescription(
+        [
+          `**Seller**: ${seller}`,
+          `**Price**: ${price}`,
+          `**Time** ${time(new Date(event.timestamp * 1000))}`,
+        ].join("\n"),
+      );
+    }
+    if (eventType === "sale") {
+      postEmbed.setTitle(`${metadata.name} Sold!`);
+      const buyer =
+        (await getNfdByAddr(event.buyer)) ?? addrShortened(event.buyer, 6);
+      postEmbed.setDescription(
+        [
+          `**Seller**: ${seller}`,
+          `**Buyer**: ${buyer}`,
+          `**Price**: ${price}`,
+          `**Time** ${time(new Date(event.timestamp * 1000))}`,
+        ].join("\n"),
+      );
+    }
 
     const postButtons = new ActionRowBuilder<ButtonBuilder>().addComponents([
       new ButtonBuilder()
-        .setLabel("View Metadata")
+        .setLabel("👓️ Details")
         .setStyle(ButtonStyle.Primary)
         .setCustomId(`metadata-arc72-${contractId}-${tokenId}`),
       new ButtonBuilder()
@@ -134,7 +176,7 @@ const checkMarketEvents = async (
     ]);
 
     for await (const setting of settings) {
-      if (eventType === "list" && setting.listChannelId) {
+      if (eventType === "listing" && setting.listChannelId) {
         const channel = channels.get(setting.listChannelId);
         if (channel)
           await channel.send({
@@ -153,5 +195,5 @@ const checkMarketEvents = async (
     }
   }
 
-  return marketEvents.lastRound;
+  return listingResponse.currentRound;
 };

@@ -37,8 +37,9 @@ export const getCommands = async () => {
 export const getButtons = async () => {
   const buttons = new Collection<string, ButtonHandler>();
   for (const file of buttonFiles) {
+    const name = path.parse(file).name;
     const button = await import(`./buttons/${file}`);
-    buttons.set(button.name, button);
+    buttons.set(name, button);
   }
   return buttons;
 };

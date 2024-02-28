@@ -1,12 +1,8 @@
 import { ButtonInteraction, EmbedBuilder } from "discord.js";
 import { getArc72FromIndexer } from "../util.js";
 
-export const name = "metadata";
-
 export const execute = async (interaction: ButtonInteraction) => {
   const tokenType = interaction.customId.split("-")[1] as "asa" | "arc72";
-  const contractId = Number(interaction.customId.split("-")[2]);
-  const tokenId = Number(interaction.customId.split("-")[3]);
 
   if (tokenType === "asa") {
     await interaction.reply({
@@ -15,6 +11,9 @@ export const execute = async (interaction: ButtonInteraction) => {
     });
     return;
   }
+
+  const contractId = Number(interaction.customId.split("-")[2]);
+  const tokenId = Number(interaction.customId.split("-")[3]);
 
   const t = await getArc72FromIndexer(contractId, tokenId);
 

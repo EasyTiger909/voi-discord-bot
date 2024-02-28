@@ -106,6 +106,7 @@ export const execute = async (interaction: CommandInteraction) => {
         components: [],
         message: msgSelect.id,
       });
+      await interaction.deleteReply();
       return;
     }
 
@@ -140,7 +141,7 @@ export const execute = async (interaction: CommandInteraction) => {
 
       const postButtons = new ActionRowBuilder<ButtonBuilder>().addComponents([
         new ButtonBuilder()
-          .setLabel("View Metadata")
+          .setLabel("👓️ Details")
           .setStyle(ButtonStyle.Primary)
           .setCustomId(`metadata-arc72-${contractId}-${tokenId}`),
         new ButtonBuilder()
