@@ -7,7 +7,6 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist",
-    "deploy-commands": "tsc && npx run-func dist/deploy-commands.js deployAll",
     "prettier": "npx prettier . -w"
   },
   "author": "EasyTiger",

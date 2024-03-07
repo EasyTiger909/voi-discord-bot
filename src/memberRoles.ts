@@ -18,7 +18,11 @@ export const assignRoles = async (
   const arc72AppIds = new Set<number>();
   const arc200AppIds = new Set<number>();
 
-  for await (const { anyOf, allOf } of managedRoles) {
+  const guildManagedRoles = managedRoles.filter(
+    (a) => a.guildId === member.guild.id,
+  );
+
+  for await (const { anyOf, allOf } of guildManagedRoles) {
     const merged = [...(anyOf ?? []), ...(allOf ?? [])];
     for await (const req of merged) {
       if ("arc72AppId" in req) arc72AppIds.add(req.arc72AppId);
@@ -76,7 +80,7 @@ export const assignRoles = async (
 
   const guild = member.guild;
 
-  for await (const { roleId, anyOf, allOf } of managedRoles) {
+  for await (const { roleId, anyOf, allOf } of guildManagedRoles) {
     const role = guild.roles.cache.get(roleId);
     if (!role) {
       console.log(`Role ${roleId} not found in Server: ${guild.name}`);

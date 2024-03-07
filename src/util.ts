@@ -209,7 +209,8 @@ export const getArc72Listings = async (
 
   if (res.status === 200) {
     const resJson = await res.json();
-    if (resJson.listings) {
+    const newRound = Math.max(Number(resJson["current-round"]), currentRound);
+    if (resJson.listings && newRound > currentRound) {
       listings.push(
         ...resJson.listings.map((listing: Record<string, unknown>) => {
           return {
@@ -227,7 +228,7 @@ export const getArc72Listings = async (
       );
     }
 
-    return { listings, currentRound: Number(resJson["current-round"]) };
+    return { listings, currentRound: newRound };
   }
   return { listings, currentRound };
 };
@@ -257,7 +258,8 @@ export const getArc72Sales = async (
 
   if (res.status === 200) {
     const resJson = await res.json();
-    if (resJson.sales) {
+    const newRound = Math.max(Number(resJson["current-round"]), currentRound);
+    if (resJson.sales && newRound > currentRound) {
       sales.push(
         ...resJson.sales.map((sale: Record<string, unknown>) => {
           return {
@@ -276,7 +278,7 @@ export const getArc72Sales = async (
       );
     }
 
-    return { sales, currentRound: Number(resJson["current-round"]) };
+    return { sales, currentRound: newRound };
   }
   return { sales, currentRound };
 };

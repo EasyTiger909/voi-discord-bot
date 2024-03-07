@@ -156,6 +156,10 @@ const checkMarketEvents = async (
       );
     }
 
+    console.log(
+      `posting event: ${metadata.name} ${contractId}-${tokenId} ${eventType}`,
+    );
+
     const postButtons = new ActionRowBuilder<ButtonBuilder>().addComponents([
       new ButtonBuilder()
         .setLabel("👓️ Details")
@@ -179,18 +183,30 @@ const checkMarketEvents = async (
       if (eventType === "listing" && setting.listChannelId) {
         const channel = channels.get(setting.listChannelId);
         if (channel)
-          await channel.send({
-            embeds: [postEmbed],
-            components: [postButtons],
-          });
+          try {
+            await channel.send({
+              embeds: [postEmbed],
+              components: [postButtons],
+            });
+          } catch (e) {
+            console.log(
+              `Unable to send message to channel ${setting.listChannelId} for event ${metadata.name} ${contractId}-${tokenId} ${eventType}`,
+            );
+          }
       }
       if (eventType === "sale" && setting.salesChannelId) {
         const channel = channels.get(setting.salesChannelId);
         if (channel)
-          await channel.send({
-            embeds: [postEmbed],
-            components: [postButtons],
-          });
+          try {
+            await channel.send({
+              embeds: [postEmbed],
+              components: [postButtons],
+            });
+          } catch (e) {
+            console.log(
+              `Unable to send message to channel ${setting.salesChannelId} for event ${metadata.name} ${contractId}-${tokenId} ${eventType}`,
+            );
+          }
       }
     }
   }

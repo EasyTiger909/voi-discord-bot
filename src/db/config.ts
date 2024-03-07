@@ -32,12 +32,14 @@ type RoleRequirement =
 //  - Amount of standard assets held of a single or list of creator address
 //
 export const managedRoles: {
+  guildId: string;
   roleId: string;
   anyOf?: RoleRequirement[];
   allOf?: RoleRequirement[];
 }[] = [
   {
     // allOf example: this role requires holding at least 1 unit of both of these ARC72 collections
+    guildId: "1000000000000000001",
     roleId: "1042914189993328761",
     allOf: [
       { arc72AppId: 26948330, minUnits: 1n },
@@ -46,6 +48,7 @@ export const managedRoles: {
   },
   {
     // anyOf example: this role requires holding at least 10 VOI OR 10 Testnet VIA
+    guildId: "1000000000000000001",
     roleId: "1068974591621484584",
     anyOf: [
       { assetId: 0, minUnits: 10000000n },
@@ -56,6 +59,7 @@ export const managedRoles: {
     // combo example: this role requires holding:
     //   at least 1 unit of an asset created by an account AND
     //   at least one of either a certain asset or a token from example arc72 collection
+    guildId: "1000000000000000001",
     roleId: "1068974591621484500",
     allOf: [
       {

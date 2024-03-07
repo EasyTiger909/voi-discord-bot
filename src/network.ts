@@ -5,8 +5,8 @@ const network = {
   name: "Voi Testnet",
   algodServer: process.env.ALGODSERVER ?? "https://testnet-api.voi.nodly.io",
   indexerServer: process.env.IDXSERVER ?? "https://testnet-idx.voi.nodly.io",
-  port: process.env.PORT ?? "",
-  token: process.env.TOKEN ?? "",
+  port: process.env.ALGODPORT ?? "",
+  token: process.env.ALGODTOKEN ?? "",
 };
 
 const getAlgodClient = () => {
