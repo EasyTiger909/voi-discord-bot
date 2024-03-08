@@ -77,14 +77,18 @@ export const runMarketEvents = async (client: Client) => {
   );
 
   // Get starting round
-  let currentRound = await getCurrentRound();
+  const currentRound = await getCurrentRound();
+  const rounds = {
+    listingRound: currentRound,
+    salesRound: currentRound,
+  };
   console.log(`Checking market events beginning at round ${currentRound}...`);
 
   // Schedule the job
   const job = new CronJob(
     "0 * * * * *", // every minute
     async () => {
-      currentRound = await checkMarketEvents(currentRound, channels);
+      await checkMarketEvents(rounds, channels);
     },
     null,
     false,
@@ -93,14 +97,11 @@ export const runMarketEvents = async (client: Client) => {
 };
 
 const checkMarketEvents = async (
-  currentRound: number,
+  rounds: { listingRound: number; salesRound: number },
   channels: Collection<string, TextChannel>,
 ) => {
-  const listingResponse = await getArc72Listings(currentRound);
-  const salesResponse = await getArc72Sales(
-    currentRound,
-    listingResponse.currentRound,
-  );
+  const listingResponse = await getArc72Listings(rounds.listingRound);
+  const salesResponse = await getArc72Sales(rounds.salesRound);
 
   const events = [...listingResponse.listings, ...salesResponse.sales];
 
@@ -122,9 +123,7 @@ const checkMarketEvents = async (
     const { metadata } = nft;
     if (!metadata) continue;
 
-    const postEmbed = new EmbedBuilder()
-      .setImage(metadata.image)
-      .setFooter({ text: "Open Source bot by Algo Leagues team" });
+    const postEmbed = new EmbedBuilder().setImage(metadata.image);
 
     const currency = currencyLookup[event.currency];
     const price = `${event.price / 10 ** currency.decimals} ${currency.symbol}`;
@@ -211,5 +210,6 @@ const checkMarketEvents = async (
     }
   }
 
-  return listingResponse.currentRound;
+  rounds.listingRound = listingResponse.currentRound;
+  rounds.salesRound = salesResponse.currentRound;
 };
