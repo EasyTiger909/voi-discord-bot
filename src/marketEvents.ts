@@ -6,7 +6,7 @@ import {
   Client,
   Collection,
   EmbedBuilder,
-  TextChannel,
+  TextBasedChannel,
   time,
 } from "discord.js";
 import { marketEventSettings } from "./db/config.js";
@@ -30,7 +30,7 @@ export const runMarketEvents = async (client: Client) => {
     (acc, { listChannelId, salesChannelId }) => {
       if (listChannelId) {
         const listChannel = client.channels.cache.get(listChannelId);
-        if (listChannel?.type === 0) {
+        if (listChannel?.isTextBased()) {
           acc.set(listChannel.id, listChannel);
         } else {
           console.log(
@@ -40,7 +40,7 @@ export const runMarketEvents = async (client: Client) => {
       }
       if (salesChannelId) {
         const salesChannel = client.channels.cache.get(salesChannelId);
-        if (salesChannel?.type === 0) {
+        if (salesChannel?.isTextBased()) {
           acc.set(salesChannel.id, salesChannel);
         } else {
           console.log(
@@ -50,7 +50,7 @@ export const runMarketEvents = async (client: Client) => {
       }
       return acc;
     },
-    new Collection<string, TextChannel>(),
+    new Collection<string, TextBasedChannel>(),
   );
 
   // Summarize event settings to console
@@ -65,11 +65,11 @@ export const runMarketEvents = async (client: Client) => {
       ];
 
       const listChannel = channels.get(listChannelId ?? "");
-      if (listChannel)
+      if (listChannel && "name" in listChannel)
         setting.push(`Listings will be announced in #${listChannel.name}.`);
 
       const salesChannel = channels.get(salesChannelId ?? "");
-      if (salesChannel)
+      if (salesChannel && "name" in salesChannel)
         setting.push(`Sales will be announced in #${salesChannel.name}.`);
 
       if (setting.length > 1) console.log(setting.join(" "));
@@ -98,7 +98,7 @@ export const runMarketEvents = async (client: Client) => {
 
 const checkMarketEvents = async (
   rounds: { listingRound: number; salesRound: number },
-  channels: Collection<string, TextChannel>,
+  channels: Collection<string, TextBasedChannel>,
 ) => {
   const listingResponse = await getArc72Listings(rounds.listingRound);
   const salesResponse = await getArc72Sales(rounds.salesRound);
@@ -209,7 +209,7 @@ const checkMarketEvents = async (
       }
     }
   }
-
+  
   rounds.listingRound = listingResponse.currentRound;
   rounds.salesRound = salesResponse.currentRound;
 };
