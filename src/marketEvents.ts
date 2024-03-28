@@ -123,43 +123,16 @@ const checkMarketEvents = async (
     const { metadata } = nft;
     if (!metadata) continue;
 
-    const postEmbed = new EmbedBuilder().setImage(metadata.image);
-
+    const embed = new EmbedBuilder().setImage(metadata.image);
     const currency = currencyLookup[event.currency];
-    const price = `${event.price / 10 ** currency.decimals} ${currency.symbol}`;
-
     const seller =
       (await getNfdByAddr(event.seller)) ?? addrShortened(event.seller, 6);
 
-    if (eventType === "listing") {
-      postEmbed.setTitle(`${metadata.name} (New Listing)`);
-      postEmbed.setDescription(
-        [
-          `**Seller**: ${seller}`,
-          `**Price**: ${price}`,
-          `**Time** ${time(new Date(event.timestamp * 1000))}`,
-        ].join("\n"),
-      );
-    }
-    if (eventType === "sale") {
-      postEmbed.setTitle(`${metadata.name} Sold!`);
-      const buyer =
-        (await getNfdByAddr(event.buyer)) ?? addrShortened(event.buyer, 6);
-      postEmbed.setDescription(
-        [
-          `**Seller**: ${seller}`,
-          `**Buyer**: ${buyer}`,
-          `**Price**: ${price}`,
-          `**Time** ${time(new Date(event.timestamp * 1000))}`,
-        ].join("\n"),
-      );
-    }
-
     console.log(
-      `posting event: ${metadata.name} ${contractId}-${tokenId} ${eventType}`,
+      `posting ${eventType}: ${metadata.name} ${contractId}-${tokenId}`,
     );
 
-    const postButtons = new ActionRowBuilder<ButtonBuilder>().addComponents([
+    const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents([
       new ButtonBuilder()
         .setLabel("👓️ Details")
         .setStyle(ButtonStyle.Primary)
@@ -181,35 +154,59 @@ const checkMarketEvents = async (
     for await (const setting of settings) {
       if (eventType === "listing" && setting.listChannelId) {
         const channel = channels.get(setting.listChannelId);
-        if (channel)
+        if (channel && "guild" in channel) {
+          const n = new Intl.NumberFormat(channel.guild.preferredLocale, {
+            maximumFractionDigits: currency.decimals,
+          });
+          const price = `${n.format(event.price / 10 ** currency.decimals)} ${currency.symbol}`;
+
+          embed.setTitle(`${metadata.name} (New Listing)`);
+          embed.setDescription(
+            [
+              `**Seller**: ${seller}`,
+              `**Price**: ${price}`,
+              `**Time** ${time(new Date(event.timestamp * 1000))}`,
+            ].join("\n"),
+          );
           try {
-            await channel.send({
-              embeds: [postEmbed],
-              components: [postButtons],
-            });
+            await channel.send({ embeds: [embed], components: [buttons] });
           } catch (e) {
             console.log(
               `Unable to send message to channel ${setting.listChannelId} for event ${metadata.name} ${contractId}-${tokenId} ${eventType}`,
             );
           }
+        }
       }
       if (eventType === "sale" && setting.salesChannelId) {
         const channel = channels.get(setting.salesChannelId);
-        if (channel)
+        if (channel && "guild" in channel) {
+          const n = new Intl.NumberFormat(channel.guild.preferredLocale, {
+            maximumFractionDigits: currency.decimals,
+          });
+          const price = `${n.format(event.price / 10 ** currency.decimals)} ${currency.symbol}`;
+          embed.setTitle(`${metadata.name} Sold!`);
+          const buyer =
+            (await getNfdByAddr(event.buyer)) ?? addrShortened(event.buyer, 6);
+          embed.setDescription(
+            [
+              `**Seller**: ${seller}`,
+              `**Buyer**: ${buyer}`,
+              `**Price**: ${price}`,
+              `**Time** ${time(new Date(event.timestamp * 1000))}`,
+            ].join("\n"),
+          );
           try {
-            await channel.send({
-              embeds: [postEmbed],
-              components: [postButtons],
-            });
+            await channel.send({ embeds: [embed], components: [buttons] });
           } catch (e) {
             console.log(
               `Unable to send message to channel ${setting.salesChannelId} for event ${metadata.name} ${contractId}-${tokenId} ${eventType}`,
             );
           }
+        }
       }
     }
   }
-  
+
   rounds.listingRound = listingResponse.currentRound;
   rounds.salesRound = salesResponse.currentRound;
 };
