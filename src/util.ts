@@ -200,47 +200,50 @@ export const getArc72Listings = async (
   currentRound: number,
   maxRound?: number,
 ) => {
-  const endpoint =
-    "https://arc72-idx.voirewards.com/nft-indexer/v1/mp/listings?";
-  const res = await fetch(
-    `${endpoint}min-round=${currentRound + 1}${maxRound ? `&max-round=${maxRound}` : ""}`,
-  );
   const listings: Arc72IndexerListing[] = [];
-
-  if (res.status === 200) {
-    const resJson = await res.json();
-    if (resJson.listings) {
-      listings.push(
-        ...resJson.listings.map((listing: Record<string, unknown>) => {
-          return {
-            eventType: "listing",
-            transactionId: listing.transactionId,
-            seller: listing.seller,
-            price: listing.price,
-            currency: listing.currency,
-            round: listing.createRound,
-            timestamp: listing.createTimestamp,
-            contractId: listing.collectionId,
-            tokenId: listing.tokenId,
-          };
-        }),
-      );
-    }
-
-    const newRound = listings.reduce(
-      (max, e) => (e.round > max ? e.round : max),
-      currentRound,
+  try {
+    const endpoint =
+      "https://arc72-idx.voirewards.com/nft-indexer/v1/mp/listings?";
+    const res = await fetch(
+      `${endpoint}min-round=${currentRound + 1}${maxRound ? `&max-round=${maxRound}` : ""}`,
     );
 
-    if (newRound > currentRound) {
-      return { listings, currentRound: newRound };
-    } else {
-      return { listings: [], currentRound };
-    }
-  }
-  return { listings, currentRound };
-};
+    if (res.status === 200) {
+      const resJson = await res.json();
+      if (resJson.listings) {
+        listings.push(
+          ...resJson.listings.map((listing: Record<string, unknown>) => {
+            return {
+              eventType: "listing",
+              transactionId: listing.transactionId,
+              seller: listing.seller,
+              price: listing.price,
+              currency: listing.currency,
+              round: listing.createRound,
+              timestamp: listing.createTimestamp,
+              contractId: listing.collectionId,
+              tokenId: listing.tokenId,
+            };
+          }),
+        );
+      }
 
+      const newRound = listings.reduce(
+        (max, e) => (e.round > max ? e.round : max),
+        currentRound,
+      );
+
+      if (newRound > currentRound) {
+        return { listings, currentRound: newRound };
+      } else {
+        return { listings: [], currentRound };
+      }
+    }
+    return { listings, currentRound };
+  } catch (error) {
+    return { listings, currentRound };
+  }
+};
 type Arc72IndexerSale = {
   eventType: "sale";
   transactionId: string;
@@ -258,43 +261,47 @@ export const getArc72Sales = async (
   currentRound: number,
   maxRound?: number,
 ) => {
-  const endpoint = "https://arc72-idx.voirewards.com/nft-indexer/v1/mp/sales?";
-  const res = await fetch(
-    `${endpoint}min-round=${currentRound + 1}${maxRound ? `&max-round=${maxRound}` : ""}`,
-  );
   const sales: Arc72IndexerSale[] = [];
-
-  if (res.status === 200) {
-    const resJson = await res.json();
-    if (resJson.sales) {
-      sales.push(
-        ...resJson.sales.map((sale: Record<string, unknown>) => {
-          return {
-            eventType: "sale",
-            transactionId: sale.transactionId,
-            seller: sale.seller,
-            buyer: sale.buyer,
-            price: sale.price,
-            currency: sale.currency,
-            round: sale.round,
-            timestamp: sale.timestamp,
-            contractId: sale.collectionId,
-            tokenId: sale.tokenId,
-          };
-        }),
-      );
-    }
-
-    const newRound = sales.reduce(
-      (max, e) => (e.round > max ? e.round : max),
-      currentRound,
+  const endpoint = "https://arc72-idx.voirewards.com/nft-indexer/v1/mp/sales?";
+  try {
+    const res = await fetch(
+      `${endpoint}min-round=${currentRound + 1}${maxRound ? `&max-round=${maxRound}` : ""}`,
     );
 
-    if (newRound > currentRound) {
-      return { sales, currentRound: newRound };
-    } else {
-      return { sales: [], currentRound };
+    if (res.status === 200) {
+      const resJson = await res.json();
+      if (resJson.sales) {
+        sales.push(
+          ...resJson.sales.map((sale: Record<string, unknown>) => {
+            return {
+              eventType: "sale",
+              transactionId: sale.transactionId,
+              seller: sale.seller,
+              buyer: sale.buyer,
+              price: sale.price,
+              currency: sale.currency,
+              round: sale.round,
+              timestamp: sale.timestamp,
+              contractId: sale.collectionId,
+              tokenId: sale.tokenId,
+            };
+          }),
+        );
+      }
+
+      const newRound = sales.reduce(
+        (max, e) => (e.round > max ? e.round : max),
+        currentRound,
+      );
+
+      if (newRound > currentRound) {
+        return { sales, currentRound: newRound };
+      } else {
+        return { sales: [], currentRound };
+      }
     }
+    return { sales, currentRound };
+  } catch (error) {
+    return { sales, currentRound };
   }
-  return { sales, currentRound };
 };
